@@ -1,0 +1,8 @@
+flask
+flask-cors
+pymongo
+bcrypt
+opencv-python
+deepface
+numpy
+python-dotenv

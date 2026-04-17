@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Webcam</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body onload="checkAuth()">
+
+<!-- NAVBAR -->
+<div class="navbar">
+    <h2>🎥 Live Emotion Detection</h2>
+    <button onclick="logout()">Logout</button>
+</div>
+
+<!-- WEBCAM STREAM -->
+<div class="webcam-container">
+
+    <img src="http://localhost:5000/video_feed" width="700">
+
+    <br><br>
+
+    <a href="dashboard.html">
+        <button>⬅ Back to Dashboard</button>
+    </a>
+
+</div>
+
+<script src="script.js"></script>
+
+</body>
+</html>
