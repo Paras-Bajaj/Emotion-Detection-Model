@@ -1,5 +1,4 @@
-import cv2
-from deepface import DeepFace
+93% of storage used … If you run out, you can't create, edit and upload files. Share 100 GB of storage with your family members for ₹59 for 1 month ₹130.
 from collections import Counter
 
 
@@ -9,10 +8,18 @@ def analyze_video(video_path):
         emotions list + dominant emotion
     """
 
+    try:
+        import cv2
+    except ImportError as exc:
+        raise RuntimeError("opencv-python is not installed") from exc
+
+    try:
+        from deepface import DeepFace
+    except ImportError as exc:
+        raise RuntimeError("deepface is not installed") from exc
+
     emotions = []
-
     cap = cv2.VideoCapture(video_path)
-
     frame_count = 0
 
     while True:
@@ -23,7 +30,6 @@ def analyze_video(video_path):
 
         frame_count += 1
 
-        # 🔥 keep your original frame logic (every 10th frame)
         if frame_count % 20 != 0:
             continue
 
@@ -41,24 +47,17 @@ def analyze_video(video_path):
             else:
                 emotion = result['dominant_emotion']
 
-            # ✅ PRINT (as you want)
             print("Frame emotion:", emotion)
-
             emotions.append(emotion)
-
-        except Exception as e:
-            print("Error processing frame:", e)
+        except Exception as exc:
+            print("Error processing frame:", exc)
             continue
 
     cap.release()
 
-    # 🔥 handle no detection
     if not emotions:
         return [], "No emotion detected"
 
-    # 🔥 dominant emotion
     dominant_emotion = Counter(emotions).most_common(1)[0][0]
-
     print("\nFinal Dominant Emotion:", dominant_emotion)
-
     return emotions, dominant_emotion

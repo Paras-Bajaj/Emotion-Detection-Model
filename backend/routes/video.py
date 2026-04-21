@@ -1,3 +1,4 @@
+93% of storage used … If you run out, you can't create, edit and upload files. Share 100 GB of storage with your family members for ₹59 for 1 month ₹130.
 from flask import Blueprint, request, jsonify
 import os
 from utils.emotion import analyze_video
@@ -33,7 +34,10 @@ def upload_video():
     print("Video saved:", filepath)
 
     # ANALYZE VIDEO
-    emotions, summary = analyze_video(filepath)
+    try:
+        emotions, summary = analyze_video(filepath)
+    except RuntimeError as exc:
+        return jsonify({"msg": str(exc)}), 503
 
     # STORE IN DB
     results.insert_one({

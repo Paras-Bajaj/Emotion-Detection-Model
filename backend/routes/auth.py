@@ -1,56 +1,55 @@
+93% of storage used … If you run out, you can't create, edit and upload files. Share 100 GB of storage with your family members for ₹59 for 1 month ₹130.
 from flask import Blueprint, request, jsonify
+from werkzeug.security import check_password_hash, generate_password_hash
+from itsdangerous import URLSafeTimedSerializer
+
 from utils.db import users
-import bcrypt
-import jwt
-import datetime
+from utils.tokens import get_secret_key
 
 auth_bp = Blueprint('auth', __name__)
+serializer = URLSafeTimedSerializer(get_secret_key())
 
-SECRET_KEY = "secret123"
 
-
-# 🔐 SIGNUP
 @auth_bp.route('/signup', methods=['POST'])
 def signup():
-    data = request.json
+    data = request.get_json(silent=True) or {}
 
     email = data.get("email")
     password = data.get("password")
 
+    if not email or not password:
+        return jsonify({"msg": "Email and password are required"}), 400
+
     if users.find_one({"email": email}):
         return jsonify({"msg": "User already exists"}), 400
 
-    hashed_password = bcrypt.hashpw(password.encode(), bcrypt.gensalt())
-
     users.insert_one({
         "email": email,
-        "password": hashed_password
+        "password": generate_password_hash(password)
     })
 
     return jsonify({"msg": "Signup successful"})
 
 
-# 🔐 LOGIN
 @auth_bp.route('/login', methods=['POST'])
 def login():
-    data = request.json
+    data = request.get_json(silent=True) or {}
 
     email = data.get("email")
     password = data.get("password")
+
+    if not email or not password:
+        return jsonify({"msg": "Email and password are required"}), 400
 
     user = users.find_one({"email": email})
 
     if not user:
         return jsonify({"msg": "User not found"}), 404
 
-    if not bcrypt.checkpw(password.encode(), user["password"]):
+    if not check_password_hash(user["password"], password):
         return jsonify({"msg": "Invalid password"}), 401
 
-    # 🔥 CREATE TOKEN
-    token = jwt.encode({
-        "email": email,
-        "exp": datetime.datetime.utcnow() + datetime.timedelta(hours=2)
-    }, SECRET_KEY, algorithm="HS256")
+    token = serializer.dumps({"email": email})
 
     return jsonify({
         "msg": "Login successful",

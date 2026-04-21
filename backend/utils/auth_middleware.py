@@ -1,7 +1,10 @@
-import jwt
+93% of storage used … If you run out, you can't create, edit and upload files. Share 100 GB of storage with your family members for ₹59 for 1 month ₹130.
 from flask import request, jsonify
+from itsdangerous import BadSignature, SignatureExpired, URLSafeTimedSerializer
 
-SECRET_KEY = "secret123"
+from utils.tokens import TOKEN_MAX_AGE_SECONDS, get_secret_key
+
+serializer = URLSafeTimedSerializer(get_secret_key())
 
 
 def verify_token():
@@ -11,9 +14,10 @@ def verify_token():
         return None, jsonify({"msg": "Token missing"}), 401
 
     try:
-        decoded = jwt.decode(token, SECRET_KEY, algorithms=["HS256"])
+        decoded = serializer.loads(token, max_age=TOKEN_MAX_AGE_SECONDS)
         return decoded, None, None
-
-    except Exception as e:
-        print("JWT ERROR:", e)
+    except SignatureExpired:
+        return None, jsonify({"msg": "Token expired"}), 401
+    except BadSignature as exc:
+        print("TOKEN ERROR:", exc)
         return None, jsonify({"msg": "Invalid token"}), 401

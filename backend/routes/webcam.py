@@ -1,10 +1,22 @@
+93% of storage used … If you run out, you can't create, edit and upload files. Share 100 GB of storage with your family members for ₹59 for 1 month ₹130.
 from flask import Blueprint, Response
-import cv2
-from deepface import DeepFace
 
 webcam_bp = Blueprint('webcam', __name__)
 
+
 def generate_frames():
+    try:
+        import cv2
+    except ImportError:
+        yield b'--frame\r\nContent-Type: text/plain\r\n\r\nopencv-python is not installed\r\n'
+        return
+
+    try:
+        from deepface import DeepFace
+    except ImportError:
+        yield b'--frame\r\nContent-Type: text/plain\r\n\r\ndeepface is not installed\r\n'
+        return
+
     cap = cv2.VideoCapture(0)
 
     while True:
@@ -23,7 +35,6 @@ def generate_frames():
             if not emotion:
                 emotion = "unknown"
 
-            # Draw emotion text
             cv2.putText(
                 frame,
                 emotion,
@@ -33,11 +44,9 @@ def generate_frames():
                 (0, 255, 0),
                 2
             )
-
-        except:
+        except Exception:
             pass
 
-        # Encode frame
         _, buffer = cv2.imencode('.jpg', frame)
         frame_bytes = buffer.tobytes()
 
