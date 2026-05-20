@@ -1,0 +1,28 @@
+FROM python:3.10-slim
+
+WORKDIR /app
+
+# Install system dependencies required by rendering engines (av, headless OpenCV)
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    gcc \
+    g++ \
+    libgl1 \
+    libglib2.0-0 \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install specific presentation dependencies directly via pip flags
+RUN pip install --no-cache-dir \
+    streamlit==1.32.0 \
+    streamlit-webrtc==0.47.5 \
+    opencv-python-headless==4.9.0.80 \
+    requests==2.31.0 \
+    av==11.0.0 \
+    numpy==1.26.4
+
+# Mirror the project UI source files explicitly inside the image layer
+COPY ./ui /app/ui
+
+EXPOSE 8501
+
+# Start the Streamlit application server interface configuration
+CMD ["streamlit", "run", "ui/app_ui.py", "--server.port=8501", "--server.address=0.0.0.0"]
