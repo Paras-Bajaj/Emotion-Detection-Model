@@ -4,7 +4,7 @@ import onnxruntime as ort
 from fastapi import FastAPI, HTTPException, UploadFile, File
 import cv2
 
-from src.inference.utils import preprocess_image, EMOTION_LABELS
+from backend.utils import preprocess_image, EMOTION_LABELS
 
 app = FastAPI(title="Vision-Based Emotion Recognition Engine", version="2.0")
 
